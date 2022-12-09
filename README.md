@@ -11,7 +11,7 @@ This is a Google Sheets script to add a mailmerge user interface
 Then close the script, and you should be ready. 
 
 1. From the new Email menu, do *Setup Mailmerge*
-2. Choose the column to use as a filter (true/false or 1/0)
+2. Choose the column to use as a filter (TRUE/FALSE or 1/0)
 3. Choose the "to" column 
 4. To see a preview, click < or > and look at the next row
 5. Subject may contain ${field} as well as the message body
