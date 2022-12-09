@@ -16,3 +16,7 @@ Then close the script, and you should be ready.
 4. To see a preview, click < or > and look at the next row
 5. Subject may contain ${field} as well as the message body
 6. To include images, read the source code
+
+It records who it's sent to, and only send an email to someone once in case the script crashes and you need to resume. Or in case the "who you want to send to" changes. Version two will support multiple campaigns.
+
+To reset and make everyone sendable again, "Email -> Reset Sent"
