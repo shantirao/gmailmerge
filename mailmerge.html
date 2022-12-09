@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+<style>
+  body,p {font-size:10pt;}
+  </style>
+    <base target="_top">
+  </head>
+
+  <body>
+    Filter: <select value=filter id=filter><option value=""></option></select><br>
+    To: <select value=to id=to><option value=""></option></select><input id=email size=30> <button onClick="step(-1)"> &lt; </button><span id=current></span><button onClick="step(+1)"> &gt; </button>
+    <br>Subject: <input id=subject size=70 > 
+    <br><div id=fields ></div>
+
+     <br><textarea id="message" rows="20" cols="80" name="text">Dear ${First Name} ${Last Name}</textarea> 
+
+    <div style="border:1px solid #808080; padding:2pt;" id=preview ></div>
+    <input type="button" value="Preview" onclick="step(0)" />
+    <input type="button" value="Send one" onclick="sendOne()" />
+    <span id=quota></span> remaining
+    <input type="button" value="Save" onclick="save();" />
+    <input type="button" value="Save + Close" onclick="save(true);" />
+    <div id=debug ></div>
+    <div id=error ></div>
+
+  </body>
+      <script>
+      current = 0;
+      max = 0;
+      header= null;
+      function $(id) {return document.getElementById(id);}
+      function setter(id) {return function(t){var x = $(id); if (x.tagName=='INPUT' || x.tagName=='TEXTAREA') x.value = t; else x.innerHTML = t;};}
+      function setCount(n) {max = n;$('current').innerHTML = current + '/' + (max-1); step(0);}
+      function setHeader(header) 
+      {
+        $('fields').innerHTML = header.map(function(x){return '<u><span onClick="type(\'${'+x+'}\')">' + x + '</span></u>';}).join(' ');
+        var select1 = $('filter');
+        var select2 = $('to');
+        for (var i=0;i<header.length;i++)
+          {
+            var option = document.createElement("option");
+            option.text = option.value = header[i];
+            select1.add(option);
+             option = document.createElement("option");
+            option.text = option.value = header[i];
+            select2.add(option);
+          }
+        google.script.run.withSuccessHandler(function(v){if(v) select1.value=v;}).property('filter');
+        google.script.run.withSuccessHandler(function(v){if(v) select2.value=v;}).property('to');
+      }
+      function step(dx)
+      {
+         current += dx;
+         if (current >= max) current = 0;
+         if (current < 0) current = max-1;
+         $('current').innerHTML = current.toString();
+         google.script.run.withSuccessHandler(setter('preview')).render(current,$('message').value);
+         google.script.run.withSuccessHandler(setter('email')).tableGet(current,$('to').value);
+      }
+      function getQuota(){google.script.run.withFailureHandler(onFailure).withSuccessHandler(setter('quota')).getQuota();}
+      function sendOne() {
+      var subject = $('subject').value;
+      var message = $('message').value;
+      window.alert(current+' '+subject+' '+message);
+      google.script.run.withFailureHandler(onFailure).withSuccessHandler(getQuota).sendOne(current, subject,message); 
+      window.alert('sent!');
+      }
+
+var closeAfterSubmit = 0;
+
+      function save(closeAfter)
+      {
+        if (closeAfter) closeAfterSubmit = 3;
+        google.script.run.withFailureHandler(onFailure).withSuccessHandler(confirmSave).property('message',$('message').value);
+        google.script.run.withFailureHandler(onFailure).withSuccessHandler(confirmSave).property('subject',$('subject').value);
+        google.script.run.withFailureHandler(onFailure).withSuccessHandler(confirmSave).property('filter',$('filter').value);
+        google.script.run.withFailureHandler(onFailure).withSuccessHandler(confirmSave).property('to',$('to').value);
+      }
+      
+      function confirmSave(msg)
+      {
+        if (closeAfterSubmit) {if (--closeAfterSubmit == 0) google.script.host.close();}
+        //$('debug').innerText += msg;
+      }
+      function onFailure(error) 
+      {
+         $('error').innerHTML+= error.message;
+      }
+
+      function type(x) 
+      {
+        var el=$('message');
+        var start = el.selectionStart;
+        var end = el.selectionEnd;
+        var text = el.value;
+        var before = text.substring(0, start);
+        var after  = text.substring(end, text.length);
+        el.value = (before + x + after);
+        el.selectionStart = el.selectionEnd = start + x.length;
+        el.focus();
+      }      
+      google.script.run.withFailureHandler(onFailure).withSuccessHandler(setCount).tableCount();
+      google.script.run.withFailureHandler(onFailure).withSuccessHandler(setHeader).tableHeader();
+      google.script.run.withFailureHandler(onFailure).withSuccessHandler(setter('quota')).getQuota();
+      google.script.run.withFailureHandler(onFailure).withSuccessHandler(setter('message')).property('message');
+      google.script.run.withFailureHandler(onFailure).withSuccessHandler(setter('subject')).property('subject');
+   //  $('debug').innerHTML += 'ready'; 
+    </script>
+    </html>
