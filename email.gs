@@ -17,6 +17,8 @@ function onOpen() {
     .addItem('Mailmerge setup', 'mailMergeUI')
     .addItem('Preview send all', 'previewSend')
     .addItem('Send all now', 'sendAll')
+    .addSeparator()
+    .addItem('Reset sent', 'resetSent')
     .addToUi();
 }
 
